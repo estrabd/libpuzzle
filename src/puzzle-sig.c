@@ -14,8 +14,7 @@ void usage(void)
     exit(EXIT_SUCCESS);
 }
 
-int parse_opts(Opts * const opts, PuzzleContext * context,
-               int argc, char * const *argv) {
+int parse_opts(Opts * const opts, int argc, char * const *argv) {
     int opt;
     extern char *optarg;
     extern int optind;
@@ -29,19 +28,23 @@ int parse_opts(Opts * const opts, PuzzleContext * context,
 int main(int argc, char *argv[])
 {
     Opts opts;
+    parse_opts(&opts, argc, argv);
+    return _puzzle_fill_cvec_from_file(opts.file1);
+}
+
+int _puzzle_fill_cvec_from_file(char *filename) {
     PuzzleContext context;
     PuzzleCvec cvec1;
     double d;
     
     puzzle_init_context(&context);    
-    parse_opts(&opts, &context, argc, argv);
     puzzle_init_cvec(&context, &cvec1);
-    if (puzzle_fill_cvec_from_file(&context, &cvec1, opts.file1) != 0) {    
-        fprintf(stderr, "Unable to read [%s]\n", opts.file1);
+    if (puzzle_fill_cvec_from_file(&context, &cvec1, filename) != 0) {    
+        fprintf(stderr, "Unable to read [%s]\n", filename);
         return 1;
     }
 
-    // bde
+    // bde - just prints the signature
     size_t remaining;
     int c2;
     remaining = cvec1.sizeof_vec;
