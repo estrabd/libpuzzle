@@ -35,26 +35,39 @@ int main(int argc, char *argv[])
 int _puzzle_fill_cvec_from_file(char *filename) {
     PuzzleContext context;
     PuzzleCvec cvec1;
+    PuzzleCompressedCvec c_cvec1;
     double d;
     
     puzzle_init_context(&context);    
     puzzle_init_cvec(&context, &cvec1);
+
+    // update lambda (number of samples) taken for each image to 13
+    puzzle_set_lambdas(&context, 13);
+
+    // set p-ratio (using default/reference of 2.0), but lower if too many false positives
+    puzzle_set_p_ratio(&context, 2.0);
+
     if (puzzle_fill_cvec_from_file(&context, &cvec1, filename) != 0) {    
         fprintf(stderr, "Unable to read [%s]\n", filename);
         return 1;
     }
 
+    // compress
+    puzzle_init_compressed_cvec(&context, &c_cvec1);
+    puzzle_compress_cvec(&context, &c_cvec1, &cvec1);
+
     // bde - just prints the signature
     size_t remaining;
     int c2;
-    remaining = cvec1.sizeof_vec;
+    remaining = c_cvec1.sizeof_compressed_vec;
     do {
         remaining--;
-        c2 = (int) cvec1.vec[remaining];
-        printf("%u",cvec1.vec[remaining]);
+        c2 = (int) c_cvec1.vec[remaining];
+        printf("%u",c_cvec1.vec[remaining]);
     } while (remaining > (size_t) 0U);
     printf("\n");
 
+    puzzle_free_compressed_cvec(&context, &c_cvec1);
     puzzle_free_cvec(&context, &cvec1);
     puzzle_free_context(&context);
 
